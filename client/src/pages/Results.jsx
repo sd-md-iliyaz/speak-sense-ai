@@ -6,6 +6,14 @@ export default function Results() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [animatedScores, setAnimatedScores] = useState({});
+  const [latestSummary, setLatestSummary] = useState(null);
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  });
 
   // Mock data for the interview results
   const results = {
@@ -155,6 +163,13 @@ export default function Results() {
   const total = pieData.reduce((sum, item) => sum + item.value, 0);
 
   useEffect(() => {
+    try {
+      const summary = JSON.parse(localStorage.getItem("latestInterviewSummary") || "null");
+      setLatestSummary(summary);
+    } catch {
+      setLatestSummary(null);
+    }
+
     const timer = setTimeout(() => {
       setAnimatedScores({
         overall: results.overall.score,
@@ -185,6 +200,9 @@ export default function Results() {
             Back to Dashboard
           </Link>
           <h1>Interview Results & Analytics</h1>
+          {profile?.industry && (
+            <div className="industry-chip">{profile.industry}</div>
+          )}
           <div className="header-actions">
             <button className="share-btn" onClick={() => window.print()}>
               <span>📊</span>
@@ -235,6 +253,21 @@ export default function Results() {
         <div className="results-content">
           {activeTab === 'overview' && (
             <div className="overview-tab">
+              {latestSummary && (
+                <div className="session-summary-card">
+                  <h3>Latest Session</h3>
+                  <p>
+                    Interviewer: <strong>{latestSummary.interviewer || 'AI Coach'}</strong> · 
+                    Mode: <strong>{latestSummary.mode}</strong> · 
+                    Difficulty: <strong>{latestSummary.config?.difficulty || 'intermediate'}</strong>
+                  </p>
+                  <p>
+                    Focus: <strong>{latestSummary.config?.mode || 'balanced'}</strong> · 
+                    Questions: <strong>{latestSummary.questionsAnswered || 0}</strong>
+                  </p>
+                </div>
+              )}
+
               {/* Score Cards */}
               <div className="score-cards">
                 <div className="score-card overall">
